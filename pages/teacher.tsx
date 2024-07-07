@@ -1,16 +1,18 @@
 import React, { useEffect, useState } from 'react';
-import { Text, SafeAreaView, ScrollView, StyleSheet, View, Image, Modal, Pressable, TouchableOpacity } from 'react-native';
+import { Text, SafeAreaView, ScrollView, StyleSheet, View, Image, Modal, Pressable, TouchableOpacity, Dimensions } from 'react-native';
 import ContentPanel from '../components/contentPanel';
 import HeaderIFTM from '../components/header';
 import { Picker } from '@react-native-picker/picker';
 import DSGovLoadingCircle from '../components/loading';
 import DSGovButton from '../components/button';
+import { VictoryLegend, VictoryPie } from "victory-native";
 
 export default function TeacherScreen({ route, navigation }) {
     const [loading, setLoading] = useState(true);
     const [selectedCampusValue, setSelectedCampusValue] = useState('0');
     const [date, setDate] = useState("");
-    const [teachers, setTeachers] = useState<any | null>(null);
+    const [teacherDateGraphData, setTeacherDateGraphData] = useState<any | null>(null);
+    const [teacherTitleGraphData, setTeacherTitleGraphData] = useState<any | null>(null);
     const [teacherList, setTeacherList] = useState<any | null>(null);
     const [teacherCount, setTeacherCount] = useState('');
     const [teacherLattesCount, setTeacherLattesCount] = useState('');
@@ -60,56 +62,59 @@ export default function TeacherScreen({ route, navigation }) {
         }
     }
 
-    async function fetchData(endpoint: string, fields: string[], setData: (value: any) => void) {
+    async function fetchData(endpoint: string, fields: string[], setData1: (value: any) => void, setData2: (value: any) => void) {
         setLoading(true);
         try {
             const result = await fetch(`https://obsiftm.midi.upt.iftm.edu.br/api/Pesquisadores/${endpoint}?QualInstituicao=${selectedCampusValue}`);
             const data = await result.json();
 
-            // console.log(`Data from ${endpoint}:`, data);
-
             setTeacherList(data);
 
-            const formattedData = data.map(item => {
-                let formattedItem = { ano: item.ano };
-                fields.forEach(field => {
-                    formattedItem[field] = item[field];
-                });
-                return formattedItem;
-            });
+            const filteredData = data.filter((item: any) => item[fields[0]] !== "null" && item[fields[1]] !== "null" && item[fields[2]] !== "null");
 
-            const groupedData = formattedData.reduce((acc, current) => {
-                const year = current.ano;
-                if (!acc[year]) {
-                    acc[year] = fields.reduce((fieldAcc, field) => {
-                        fieldAcc[field] = current[field];
-                        return fieldAcc;
-                    }, {});
-                } else {
-                    fields.forEach(field => {
-                        acc[year][field] += current[field];
-                    });
-                }
-                return acc;
-            }, {});
+            const graduacaoCount = parseInt(teacherCount) - filteredData.filter((item: any) => item[fields[1]] != null || item[fields[2]] != null).length;
+            const mestradoCount = filteredData.filter((item: any) => item[fields[1]] !== null && item[fields[2]] == null).length;
+            const doutoradoCount = filteredData.filter((item: any) => item[fields[2]] !== null).length;
 
-            const finalData = Object.keys(groupedData).map(year => {
-                let finalItem = { ano: year };
-                fields.forEach(field => {
-                    finalItem[field] = groupedData[year][field];
-                });
-                return finalItem;
-            });
+            const titleGraphData = [
+                { x: "Graduação", y: graduacaoCount },
+                { x: "Mestrado", y: mestradoCount },
+                { x: "Doutorado", y: doutoradoCount }
+            ];
 
-            // console.log(`Formatted data for ${endpoint}:`, finalData);
+            setData1(titleGraphData);
 
-            setData(finalData);
+            const possibleDates = ["2018", "2019", "2020", "2021", "2022", "2023", "2024"]
+
+            const lattesNoDateCount = filteredData.filter((item: any) => possibleDates.indexOf(item[fields[3]].substring(0, 4)) == -1).length;
+            const lattes2018Count = filteredData.filter((item: any) => item[fields[3]].substring(0, 4) == "2018").length;
+            const lattes2019Count = filteredData.filter((item: any) => item[fields[3]].substring(0, 4) == "2019").length;
+            const lattes2020Count = filteredData.filter((item: any) => item[fields[3]].substring(0, 4) == "2020").length;
+            const lattes2021Count = filteredData.filter((item: any) => item[fields[3]].substring(0, 4) == "2021").length;
+            const lattes2022Count = filteredData.filter((item: any) => item[fields[3]].substring(0, 4) == "2022").length;
+            const lattes2023Count = filteredData.filter((item: any) => item[fields[3]].substring(0, 4) == "2023").length;
+            const lattes2024Count = filteredData.filter((item: any) => item[fields[3]].substring(0, 4) == "2024").length;
+
+            const dateGraphData = [
+                { x: "Sem Lattes", y: lattesNoDateCount },
+                { x: "2018", y: lattes2018Count },
+                { x: "2019", y: lattes2019Count },
+                { x: "2020", y: lattes2020Count },
+                { x: "2021", y: lattes2021Count },
+                { x: "2022", y: lattes2022Count },
+                { x: "2023", y: lattes2023Count },
+                { x: "2024", y: lattes2024Count }
+            ];
+
+            setData2(dateGraphData);
+
         } catch (error) {
             console.log(error);
         } finally {
             setLoading(false);
         }
     }
+
 
     async function selectTeacher(teacher: any) {
         setSelectedTeacher(teacher);
@@ -119,9 +124,9 @@ export default function TeacherScreen({ route, navigation }) {
     useEffect(() => {
         fetchData(
             "ListaPesquisadores",
-            ["professorID", "nome", "email", "graduacao", "mestrado", "doutorado", "lattesEndereco", "idFotoLattes", "dataAtualizacaoLattes",
-                "entradaInstituicao", "saidaInstituicao", "urlFoto", "pontos", "descricaoProducao", "instituicaoID", "instituicao"],
-            setTeachers
+            ["graduacao", "mestrado", "doutorado", "dataAtualizacaoLattes"],
+            setTeacherTitleGraphData,
+            setTeacherDateGraphData
         );
         getTeacherCount();
         getLastDateLattes();
@@ -130,19 +135,22 @@ export default function TeacherScreen({ route, navigation }) {
     useEffect(() => {
         fetchData(
             "ListaPesquisadores",
-            ["professorID", "nome", "email", "graduacao", "mestrado", "doutorado", "lattesEndereco", "idFotoLattes", "dataAtualizacaoLattes",
-                "entradaInstituicao", "saidaInstituicao", "urlFoto", "pontos", "descricaoProducao", "instituicaoID", "instituicao"],
-            setTeachers
+            ["graduacao", "mestrado", "doutorado", "dataAtualizacaoLattes"],
+            setTeacherTitleGraphData,
+            setTeacherDateGraphData
         );
         getTeacherCount();
         setCurrentTeacherCount(20);
     }, [selectedCampusValue]);
 
+    const windowWidth = Dimensions.get('window').width;
+    const windowHeight = Dimensions.get('window').height;
+
     return (
         <SafeAreaView style={styles.container}>
             <ScrollView contentContainerStyle={styles.scrollView}>
                 <HeaderIFTM showSubHeader={false} navigation={navigation} />
-                {!loading && date && teacherCount != "" && teachers ?
+                {!loading && date && teacherCount != "" && teacherTitleGraphData ?
                     <View>
                         <Text style={styles.title}>Consulta de decentes</Text>
                         <View style={{ display: 'flex', flexDirection: 'row' }}>
@@ -173,6 +181,80 @@ export default function TeacherScreen({ route, navigation }) {
                                         <Picker.Item label="Uberlândia Centro" value="9" />
                                     </Picker>
                                 </View>
+                            </View>} />
+                        <ContentPanel label='TITULARIDADE' content={
+                            <View style={{ display: 'flex', flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+                                <VictoryPie
+                                    width={windowWidth * 0.9}
+                                    height={windowHeight * 0.4}
+                                    labelRadius={110}
+                                    labelPosition="centroid"
+                                    data={teacherTitleGraphData}
+                                    colorScale={["tomato", "orange", "gold"]}
+                                    x="x"
+                                    y="y"
+                                    labels={({ datum }) => `${datum.x}: ${datum.y}`}
+                                    style={{
+                                        labels: {
+                                            fill: "black",
+                                            fontSize: 12,
+                                            fontWeight: "bold",
+                                            textAnchor: "middle",
+                                        }
+                                    }}
+                                />
+                                <VictoryLegend
+                                        x={50}
+                                        title="Títulos dos Docentes"
+                                        centerTitle
+                                        orientation="vertical"
+                                        height={windowHeight * 0.2}
+                                        style={{ title: { fontSize: 15, fontWeight: 'bold' } }}
+                                        data={[
+                                            { name: "Graduação", symbol: { fill: "tomato" } },
+                                            { name: "Mestrado", symbol: { fill: "orange" } },
+                                            { name: "Doutorado", symbol: { fill: "gold" } }
+                                        ]}
+                                    />
+                            </View>} />
+                            <ContentPanel label='DATA DA ÚLTIMA ATUALIZAÇÃO DO LATTES' content={
+                            <View style={{ display: 'flex', flex: 1, alignItems: 'flex-start', justifyContent: 'center' }}>
+                                <VictoryPie
+                                    width={windowWidth * 0.9}
+                                    height={windowHeight * 0.6}
+                                    labelRadius={140}
+                                    labelPosition="centroid"
+                                    labels={({ datum }) => `${datum.y}`}
+                                    style={{
+                                        labels: {
+                                            fill: "black",
+                                            fontWeight: "bold",
+                                            fontSize: 11
+                                        }
+                                    }}
+                                    data={teacherDateGraphData}
+                                    colorScale={["hotpink", "blue", "gold", "red", "deeppink", "purple", "navy", "deepskyblue"]}
+                                    x="x"
+                                    y="y"
+                                />
+                                <VictoryLegend
+                                        x={50}
+                                        title="Última atualização do Lattes dos Docentes"
+                                        centerTitle
+                                        orientation="vertical"
+                                        height={windowHeight * 0.4}
+                                        style={{ title: { fontSize: 15, fontWeight: 'bold' } }}
+                                        data={[
+                                            { name: "Sem Lattes", symbol: { fill: "hotpink" } },
+                                            { name: "2018", symbol: { fill: "blue" } },
+                                            { name: "2019", symbol: { fill: "gold" } },
+                                            { name: "2020", symbol: { fill: "red" } },
+                                            { name: "2021", symbol: { fill: "deeppink" } },
+                                            { name: "2022", symbol: { fill: "purple" } },
+                                            { name: "2023", symbol: { fill: "navy" } },
+                                            { name: "2024", symbol: { fill: "deepskyblue" } },
+                                        ]}
+                                    />
                             </View>} />
                         <ContentPanel label='DOCENTES' content={
                             <View style={{ flex: 1, backgroundColor: 'white' }}>
