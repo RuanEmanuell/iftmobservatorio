@@ -32,7 +32,6 @@ export default function HomeScreen({ route, navigation }) {
               IFTM para relatar problemas, deixar sugestões ou comentários. Basta enviar um email para o líder do projeto.</Text>
           }
         />
-        <View style={styles.footer} />
       </ScrollView>
     </SafeAreaView>
   );
@@ -51,9 +50,5 @@ const styles = StyleSheet.create({
     fontSize: 24,
     textAlign: 'center',
     marginTop: '5%',
-  },
-  footer: {
-    backgroundColor: 'green',
-    paddingVertical: 20,
-  },
+  }
 });

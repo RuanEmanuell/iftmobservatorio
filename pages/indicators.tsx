@@ -5,12 +5,43 @@ import HeaderIFTM from '../components/header';
 import DSGovLoadingCircle from '../components/loading';
 import { Picker } from '@react-native-picker/picker';
 import { VictoryChart, VictoryTheme, VictoryBar, VictoryAxis, VictoryStack } from 'victory-native';
+import InfoGraph from '../components/graph';
 
 export default function IndicatorScreen({ route, navigation }) {
     const [loading, setLoading] = useState(true);
     const [date, setDate] = useState("");
     const [bibliographicProduction, setBibliographicProduction] = useState<any | null>(null);
-    const [selectedValue, setSelectedValue] = useState('3');
+    const [orientation, setOrientation] = useState<any | null>(null);
+    const [inovation, setInovation] = useState<any | null>(null);
+    const [selectedBibliographicTypeValue, setSelectedBibliographicTypeValue] = useState('eventoArtigoCompleto');
+    const [selectedOrientationTypeValue, setSelectedOrientationTypeValue] = useState('iniciacaoCientifica');
+    const [selectedInovationTypeValue, setSelectedInovationTypeValue] = useState('registroSoftware');
+    const [selectedCampusValue, setSelectedCampusValue] = useState('0');
+    const [teacherCount, setTeacherCount] = useState('');
+    const [teacherLattesCount, setTeacherLattesCount] = useState('');
+
+    const bibliographicGraphTypeMap = {
+        "eventoArtigoCompleto": "Artigo completo em Evento",
+        "eventoArtigoResumo": "Resumo em Evento",
+        "revistaArtigo": "Artigo em Periódico",
+        "capituloLivro": "Capítulo de livro",
+        "livro": "Livro"
+    }
+
+    const orientationTypeMap = {
+        "iniciacaoCientifica": "Iniciação Científica",
+        "tccGraduacao": "TCC - Graduação",
+        "tccEspecializacao": "TCC - Especialização",
+        "mestrado": "Mestrado",
+        "doutorado": "Doutorado"
+    }
+    
+    const inovationTypeMap = {
+        "registroSoftware": "Software (Outro Registro)",
+        "registroSoftwareINPI": "Software (Registro no INPI)",
+        "patente": "Patente (Outro Registro)",
+        "patenteINPI": "Patente (Registro no INPI)"
+    }
 
     async function getLastDateLattes() {
         setLoading(true);
@@ -20,62 +51,108 @@ export default function IndicatorScreen({ route, navigation }) {
             setDate(data["data"]);
         } catch (error) {
             console.log(error);
+        } finally {
+            setLoading(false);
         }
-        setLoading(false);
     }
 
-    async function getBibliographicProduction() {
+    async function fetchData(endpoint: string, fields: string[], setData: (value: any) => void) {
         setLoading(true);
         try {
-            const result = await fetch(`https://obsiftm.midi.upt.iftm.edu.br/api/Indicadores/ProducaoBibliografica?QualInstituicao=${selectedValue}`);
+            const result = await fetch(`https://obsiftm.midi.upt.iftm.edu.br/api/Indicadores/${endpoint}?QualInstituicao=${selectedCampusValue}`);
             const data = await result.json();
-            
-            // Mapear os dados para o formato necessário para VictoryBar
-            const formattedData = data.map(item => ({
-                ano: item.ano,
-                revistaArtigo: item.revistaArtigo
-            }));
-    
-            // Agrupar os dados por ano (se necessário)
-            // Isso é útil se você tiver várias entradas por ano e quiser somar ou consolidar esses valores
+
+            console.log(`Data from ${endpoint}:`, data);
+
+            if (data && data.length > 0 && data[0]["instituicao"]) {
+                setTeacherCount(data[0]["instituicao"]["quantidadeProfessores"]);
+                setTeacherLattesCount(data[0]["instituicao"]["quantidadeProfessoresLattes"]);
+            }
+
+            const formattedData = data.map(item => {
+                let formattedItem = { ano: item.ano };
+                fields.forEach(field => {
+                    formattedItem[field] = item[field];
+                });
+                return formattedItem;
+            });
+
             const groupedData = formattedData.reduce((acc, current) => {
                 const year = current.ano;
                 if (!acc[year]) {
-                    acc[year] = current.revistaArtigo;
+                    acc[year] = fields.reduce((fieldAcc, field) => {
+                        fieldAcc[field] = current[field];
+                        return fieldAcc;
+                    }, {});
                 } else {
-                    acc[year] += current.revistaArtigo;
+                    fields.forEach(field => {
+                        acc[year][field] += current[field];
+                    });
                 }
                 return acc;
             }, {});
-    
-            // Formatar os dados em um array de objetos para cada ano
-            const finalData = Object.keys(groupedData).map(year => ({
-                ano: year,
-                revistaArtigo: groupedData[year]
-            }));
-    
-            setBibliographicProduction(finalData);
-            console.log(finalData);
+
+            const finalData = Object.keys(groupedData).map(year => {
+                let finalItem = { ano: year };
+                fields.forEach(field => {
+                    finalItem[field] = groupedData[year][field];
+                });
+                return finalItem;
+            });
+
+            console.log(`Formatted data for ${endpoint}:`, finalData);
+
+            setData(finalData);
         } catch (error) {
             console.log(error);
+        } finally {
+            setLoading(false);
         }
-        setLoading(false);
     }
+
     useEffect(() => {
-        getBibliographicProduction();
+        fetchData(
+            "ProducaoBibliografica",
+            ["eventoArtigoCompleto", "eventoArtigoResumo", "revistaArtigo", "capituloLivro", "livro"],
+            setBibliographicProduction
+        );
+        fetchData(
+            "Orientacao",
+            ["iniciacaoCientifica", "tccGraduacao", "tccEspecializacao", "mestrado", "doutorado"],
+            setOrientation
+        );
+        fetchData(
+            "Patente",
+            ["registroSoftware", "registroSoftwareINPI", "patente", "patenteINPI"],
+            setInovation
+        );
         getLastDateLattes();
     }, []);
 
     useEffect(() => {
-        getBibliographicProduction();
-    }, [selectedValue]);
+        fetchData(
+            "ProducaoBibliografica",
+            ["eventoArtigoCompleto", "eventoArtigoResumo", "revistaArtigo", "capituloLivro", "livro"],
+            setBibliographicProduction
+        );
+        fetchData(
+            "Orientacao",
+            ["iniciacaoCientifica", "tccGraduacao", "tccEspecializacao", "mestrado", "doutorado"],
+            setOrientation
+        );
+        fetchData(
+            "Patente",
+            ["registroSoftware", "registroSoftwareINPI", "patente", "patenteINPI"],
+            setInovation
+        );
+    }, [selectedCampusValue]);
 
     return (
         <SafeAreaView style={styles.container}>
             <ScrollView contentContainerStyle={styles.scrollView}>
                 <HeaderIFTM navigation={navigation} />
                 {
-                    !loading && date !== "" && bibliographicProduction ?
+                    !loading && date !== "" && bibliographicProduction && orientation && inovation ?
                         <View>
                             <Text style={styles.title}>Indicadores por Campus</Text>
                             <View style={{ display: 'flex', flexDirection: 'row' }}>
@@ -87,9 +164,9 @@ export default function IndicatorScreen({ route, navigation }) {
                                     <Text style={{ marginLeft: '5%' }}>Escolha o campus: </Text>
                                     <View style={{ flex: 1, borderWidth: 2, borderColor: 'lightgray', marginLeft: '5%', width: '90%', marginTop: 5 }}>
                                         <Picker
-                                            selectedValue={selectedValue}
+                                            selectedValue={selectedCampusValue}
                                             onValueChange={(itemValue) =>
-                                                setSelectedValue(itemValue)
+                                                setSelectedCampusValue(itemValue)
                                             }>
                                             <Picker.Item label="Todos os Campi" value="0" />
                                             <Picker.Item label="Campina Verde" value="3" />
@@ -105,42 +182,51 @@ export default function IndicatorScreen({ route, navigation }) {
                                     </View>
                                 </View>} />
                             <Text style={styles.title}>Indicadores - Todos os Campi</Text>
-                            {bibliographicProduction && bibliographicProduction.instituicao && (
-                                <>
-                                    <Text style={{ fontWeight: 'bold', marginLeft: '5%', marginTop: '5%' }}>Número de docentes: {bibliographicProduction.instituicao.quantidadeProfessores}</Text>
-                                    <Text style={{ fontWeight: 'bold', marginLeft: '5%' }}>Número de docentes com Lattes: {bibliographicProduction.instituicao.quantidadeProfessoresLattes}</Text>
-                                    <Text style={{ marginLeft: '5%' }}>Observação: Os dados da estatística são relacionados ao docentes permanentes da Instituição. Com isso, alguns dados podem estar vinculados ao docente e não à Instituição.</Text>
-                                </>
-                            )}
-                            <ContentPanel label='PRODUÇÃO BIBLIOGRÁFICA' content={
-                                <View style={{ flex: 1 }}>
-                                    <Text style={{ fontWeight: 'bold', fontStyle: 'italic', textAlign: 'center' }}>Quantidade x Anos - Artigo em periódico</Text>
-                                    <Text style={{ marginLeft: '5%', marginTop: '5%' }}>Clique no tipo de produção para inserir ou remover a seleção:</Text>
-                                    <VictoryChart
-                                        domainPadding={20}
-                                        theme={VictoryTheme.material}
-                                    >
-                                        <VictoryAxis
-                                            tickValues={[1, 2, 3, 4, 5, 6, 7]}
-                                            tickFormat={["2018", "2019", "2020", "2021", "2022", "2023", "2024"]}
-                                        />
-                                        <VictoryAxis
-                                            dependentAxis
-                                            tickFormat={(x) => (x)}
-                                        />
-                                        <VictoryStack colorScale={"qualitative"}>
-                                            <VictoryBar
-                                                colorScale={"warm"}
-                                                data={bibliographicProduction}
-                                                x="ano"
-                                                y="revistaArtigo"
-                                                barWidth={20}
-                                            />
-                                        </VictoryStack>
-                                    </VictoryChart>
-                                </View>
-                            } />
-                            <View style={styles.footer} />
+                            <Text style={{ fontWeight: 'bold', marginLeft: '5%', marginTop: '5%' }}>Número de docentes: {teacherCount}</Text>
+                            <Text style={{ fontWeight: 'bold', marginLeft: '5%' }}>Número de docentes com Lattes: {teacherLattesCount}</Text>
+                            <Text style={{ marginLeft: '5%' }}>Observação: Os dados da estatística são relacionados ao docentes permanentes da Instituição. Com isso, alguns dados podem estar vinculados ao docente e não à Instituição.</Text>
+                            <InfoGraph
+                                label='PRODUÇÃO BIBLIOGRÁFICA'
+                                graphTitle={`Quantidade x Anos - ${bibliographicGraphTypeMap[selectedBibliographicTypeValue]}`}
+                                tickValues={[1, 2, 3, 4, 5, 6, 7]}
+                                tickFormat={["2018", "2019", "2020", "2021", "2022", "2023", "2024"]}
+                                graphColor={"warm"}
+                                data={bibliographicProduction}
+                                x="ano"
+                                y={selectedBibliographicTypeValue}
+                                pickerValue={selectedBibliographicTypeValue}
+                                setPickerValue={(value) => setSelectedBibliographicTypeValue(value)}
+                                pickerItemLabels={["Artigo completo em Evento", "Resumo em Evento", "Artigo em Periódico", "Capítulo de livro", "Livro"]}
+                                pickerItemValues={["eventoArtigoCompleto", "eventoArtigoResumo", "revistaArtigo", "capituloLivro", "livro"]}
+                            />
+                            <InfoGraph
+                                label='ORIENTAÇÕES CONCLUÍDAS'
+                                graphTitle={`Quantidade x Anos - ${orientationTypeMap[selectedOrientationTypeValue]}`}
+                                tickValues={[1, 2, 3, 4, 5, 6, 7]}
+                                tickFormat={["2018", "2019", "2020", "2021", "2022", "2023", "2024"]}
+                                graphColor={"blue"}
+                                data={orientation}
+                                x="ano"
+                                y={selectedOrientationTypeValue}
+                                pickerValue={selectedOrientationTypeValue}
+                                setPickerValue={(value) => setSelectedOrientationTypeValue(value)}
+                                pickerItemLabels={["Iniciação Científica", "TCC - Graduação", "TCC - Especialização", "Mestrado", "Doutorado"]}
+                                pickerItemValues={["iniciacaoCientifica", "tccGraduacao", "tccEspecializacao", "mestrado", "doutorado"]}
+                            />
+                            <InfoGraph
+                                label='REGISTRO DE SOFTWARE E PATENTES'
+                                graphTitle={`Quantidade x Anos - ${inovationTypeMap[selectedInovationTypeValue]}`}
+                                tickValues={[1, 2, 3, 4, 5, 6, 7]}
+                                tickFormat={["2018", "2019", "2020", "2021", "2022", "2023", "2024"]}
+                                graphColor={"green"}
+                                data={inovation}
+                                x="ano"
+                                y={selectedInovationTypeValue}
+                                pickerValue={selectedInovationTypeValue}
+                                setPickerValue={(value) => setSelectedInovationTypeValue(value)}
+                                pickerItemLabels={["Software (Outro Registro)", "Software (Registro no INPI)", "Patente (Outro Registro)", "Patente (Registro no INPI)"]}
+                                pickerItemValues={["registroSoftware", "registroSoftwareINPI", "patente", "patenteINPI"]}
+                            />
                         </View> : <DSGovLoadingCircle />
                 }
             </ScrollView>
@@ -161,9 +247,5 @@ const styles = StyleSheet.create({
         fontSize: 24,
         textAlign: 'center',
         marginTop: '5%',
-    },
-    footer: {
-        backgroundColor: 'green',
-        paddingVertical: 20,
-    },
+    }
 });
