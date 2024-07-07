@@ -12,7 +12,7 @@ export default function App() {
                 <Stack.Screen
                     name='home'
                     component={HomeScreen}
-                    options={{ headerShown: false }} />
+                    options={{ headerShown: false, title: 'Início' }} />
                 <Stack.Screen
                     name='indicator'
                     component={IndicatorScreen}
@@ -20,7 +20,7 @@ export default function App() {
                 <Stack.Screen
                     name='teacher'
                     component={TeacherScreen}
-                    options={{ headerShown: false, title: 'Docentes' }} />
+                    options={{ headerShown: true, title: 'Docentes' }} />
             </Stack.Navigator>
         </NavigationContainer>
     );

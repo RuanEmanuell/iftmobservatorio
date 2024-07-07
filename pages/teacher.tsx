@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Text, SafeAreaView, ScrollView, StyleSheet, View, Image } from 'react-native';
+import { Text, SafeAreaView, ScrollView, StyleSheet, View, Image, Modal, Pressable, TouchableOpacity } from 'react-native';
 import ContentPanel from '../components/contentPanel';
 import HeaderIFTM from '../components/header';
 import { Picker } from '@react-native-picker/picker';
@@ -15,6 +15,8 @@ export default function TeacherScreen({ route, navigation }) {
     const [teacherCount, setTeacherCount] = useState('');
     const [teacherLattesCount, setTeacherLattesCount] = useState('');
     const [currentTeacherCount, setCurrentTeacherCount] = useState(20);
+    const [modalVisible, setModalVisible] = useState(false);
+    const [selectedTeacher, setSelectedTeacher] = useState<any | null>(null);
 
     const campusMap = {
         "0": "Todos os Campi",
@@ -109,6 +111,11 @@ export default function TeacherScreen({ route, navigation }) {
         }
     }
 
+    async function selectTeacher(teacher: any) {
+        setSelectedTeacher(teacher);
+        setModalVisible(true);
+    }
+
     useEffect(() => {
         fetchData(
             "ListaPesquisadores",
@@ -134,7 +141,7 @@ export default function TeacherScreen({ route, navigation }) {
     return (
         <SafeAreaView style={styles.container}>
             <ScrollView contentContainerStyle={styles.scrollView}>
-                <HeaderIFTM showSubHeader={true} navigation={navigation} />
+                <HeaderIFTM showSubHeader={false} navigation={navigation} />
                 {!loading && date && teacherCount != "" && teachers ?
                     <View>
                         <Text style={styles.title}>Consulta de decentes</Text>
@@ -172,16 +179,16 @@ export default function TeacherScreen({ route, navigation }) {
                                 <View style={{ display: 'flex', flexDirection: 'column' }}>
                                     <View style={{ display: 'flex', flexDirection: 'column', width: '100%' }}>
                                         {teacherList.map((item: any, index: number) => (
-                                            <>
-                                                {index >= currentTeacherCount - 20 && index <= currentTeacherCount && (item['instituicaoID'] == selectedCampusValue || selectedCampusValue == "0")  ?
-                                                    <View key={item['professorID']} style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', paddingVertical: 5, marginVertical: 5, elevation: 2, backgroundColor: index % 2 == 0 ? 'lightgray' : 'white' }} >
+                                            <Pressable key={index} onPress={() => { selectTeacher(item) }}>
+                                                {index >= currentTeacherCount - 20 && index <= currentTeacherCount && (item['instituicaoID'] == selectedCampusValue || selectedCampusValue == "0") ?
+                                                    <View style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', paddingVertical: 5, marginVertical: 5, elevation: 2, backgroundColor: index % 2 == 0 ? 'lightgray' : 'white' }} >
                                                         <Image
                                                             source={item['urlFoto'] == 'user.svg' ? require('../assets/user.svg') : { uri: item['urlFoto'] }}
-                                                            style={{ width: 30, height: 30, objectFit: 'contain', borderRadius: 100}}
+                                                            style={{ width: 30, height: 30, objectFit: 'cover', borderRadius: 100 }}
                                                         />
-                                                        <Text style = {{marginLeft: 5}}>{item['nome']}</Text>
+                                                        <Text style={{ marginLeft: 5 }}>{item['nome']}</Text>
                                                     </View> : <></>}
-                                            </>
+                                            </Pressable>
                                         ))}
                                     </View>
                                     <View style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'center' }}>
@@ -191,6 +198,43 @@ export default function TeacherScreen({ route, navigation }) {
                                 </View>
                             </View>
                         } />
+                        {selectedTeacher ?
+                            <Modal
+                                animationType="slide"
+                                transparent={true}
+                                visible={modalVisible}
+                            >
+                                <TouchableOpacity onPress={() => setModalVisible(false)} style={{ backgroundColor: 'rgba(0, 0, 0, 0.75)', flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                    <View style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'center', backgroundColor: 'white', minHeight: 200, height: 'auto', width: '90%' }}>
+                                        <Image
+                                            source={selectedTeacher['urlFoto'] == 'user.svg' ? require('../assets/user.svg') : { uri: selectedTeacher['urlFoto'] }}
+                                            style={{ width: 150, height: 150, objectFit: 'cover', borderRadius: 100, alignSelf: 'center', marginVertical: 20 }}
+                                        />
+                                        <Text style={{ ...styles.title, textAlign: 'center', alignSelf: 'center', marginBottom: 20 }}>{selectedTeacher['nome']}</Text>
+                                        <View style={{ display: 'flex', flexDirection: 'row', marginHorizontal: 10, marginBottom: 5, width: '66%' }}>
+                                            <Text style={{ fontWeight: 'bold' }}>EMAIL: </Text>
+                                            <Text>{selectedTeacher['email'] ? selectedTeacher['email'] : 'Não consta'} </Text>
+                                        </View>
+                                        <View style={{ display: 'flex', flexDirection: 'row', marginHorizontal: 10, marginBottom: 5, width: '66%' }}>
+                                            <Text style={{ fontWeight: 'bold' }}>GRADUAÇÃO: </Text>
+                                            <Text>{selectedTeacher['graduacao'] ? selectedTeacher['graduacao'] : 'Não consta'}</Text>
+                                        </View>
+                                        <View style={{ display: 'flex', flexDirection: 'row', marginHorizontal: 10, marginBottom: 5, width: '66%' }}>
+                                            <Text style={{ fontWeight: 'bold' }}>MESTRADO: </Text>
+                                            <Text>{selectedTeacher['mestrado'] ? selectedTeacher['mestrado'] : 'Não consta'}</Text>
+                                        </View>
+                                        <View style={{ display: 'flex', flexDirection: 'row', marginHorizontal: 10, marginBottom: 5, width: '66%' }}>
+                                            <Text style={{ fontWeight: 'bold' }}>DOUTORADO: </Text>
+                                            <Text>{selectedTeacher['doutorado'] ? selectedTeacher['doutorado'] : 'Não consta'} </Text>
+                                        </View>
+                                        <View style={{ display: 'flex', flexDirection: 'row', marginHorizontal: 10, marginBottom: 20, width: '66%' }}>
+                                            <Text style={{ fontWeight: 'bold' }}>DATA LATTES: </Text>
+                                            <Text>{selectedTeacher['dataAtualizacaoLattes'] ? selectedTeacher['dataAtualizacaoLattes'] : 'Não consta'} </Text>
+                                        </View>
+                                    </View>
+                                </TouchableOpacity>
+                            </Modal> : <></>}
+
                     </View>
                     : <DSGovLoadingCircle />}
             </ScrollView>
