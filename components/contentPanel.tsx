@@ -1,6 +1,5 @@
 import { View, Text, Image } from "react-native";
 import React, { ReactNode } from "react";
-import { ActivityIndicator } from "react-native-paper";
 
 interface panelProps {
     label: string,

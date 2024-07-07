@@ -1,9 +1,8 @@
 import { View, Text, StyleSheet, Image } from "react-native";
-import React, { ReactNode } from "react";
-import { ActivityIndicator } from "react-native-paper";
+import React from "react";
 import DSGovButton from "./button";
 
-export default function HeaderIFTM({ navigation }) {
+export default function HeaderIFTM({ navigation, showSubHeader }) {
     return (
         <>
             <View style={styles.header}>
@@ -11,6 +10,7 @@ export default function HeaderIFTM({ navigation }) {
                 <Text style={[styles.headerText, { fontWeight: 'bold', fontSize: 24 }]}>Observatório IFTM</Text>
                 <Text style={styles.headerText}>Ministério da Educação</Text>
             </View>
+            {showSubHeader == false ? <></> : 
             <View style={styles.subHeader}>
                 <Image source={require('../assets/obs.png')} style={styles.subHeaderImage} />
                 <View style={styles.subHeaderTextContainer}>
@@ -20,7 +20,7 @@ export default function HeaderIFTM({ navigation }) {
                 <DSGovButton label="Inicio" onPress={() => navigation.navigate('home')} />
                 <DSGovButton label="Indicadores" onPress={() => navigation.navigate('indicator')} />
                 <DSGovButton label="Docentes" onPress={() => navigation.navigate('teacher')} />
-            </View>
+            </View>}
         </>
     )
 }
@@ -37,13 +37,14 @@ const styles = StyleSheet.create({
     subHeader: {
         flexDirection: 'row',
         alignItems: 'center',
-        paddingHorizontal: '2.5%',
+        paddingHorizontal: '2%',
         borderBottomColor: 'lightgray',
-        borderBottomWidth: 2
+        borderBottomWidth: 2,
+        width: '100%'
     },
     subHeaderImage: {
-        height: 30,
-        width: 30,
+        height: 20,
+        width: 20,
     },
     subHeaderTextContainer: {
         flexDirection: 'row',

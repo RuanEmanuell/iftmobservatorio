@@ -1,20 +1,19 @@
 import React from 'react';
-import { Text, View, SafeAreaView, ScrollView, Image, StyleSheet } from 'react-native';
+import { Text, SafeAreaView, ScrollView, StyleSheet } from 'react-native';
 import ContentPanel from '../components/contentPanel';
 import HeaderIFTM from '../components/header';
-import DSGovButton from '../components/button';
 
 export default function HomeScreen({ route, navigation }) {
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView contentContainerStyle={styles.scrollView}>
-        <HeaderIFTM navigation={navigation} />
+        <HeaderIFTM showSubHeader = {true} navigation={navigation} />
         <Text style={styles.title}>Bem vindo ao Observatório IFTM</Text>
         <ContentPanel
           image={require('../assets/obs.png')}
           label='OBSERVATÓRIO'
           content={
-            <Text style={{ textAlign: 'justify', marginHorizontal: 7.5 }}>'O Observatório tem como principal objetivo o mapeamento das áreas de pesquisa, perfis de professores e elaboração de indicadores de pesquisa. O Observatório faz parte do Grupo de Pesquisa em Mineração da Dados e Imagens (MiDI) do IFTM Campus Avançado Uberaba Parque Tecnológico. As estatísticas são realizadas usando o currículo Lattes dos professores permanentes da instituição.'.</Text>
+            <Text style={{ textAlign: 'justify', marginHorizontal: 7.5 }}>O Observatório tem como principal objetivo o mapeamento das áreas de pesquisa, perfis de professores e elaboração de indicadores de pesquisa. O Observatório faz parte do Grupo de Pesquisa em Mineração da Dados e Imagens (MiDI) do IFTM Campus Avançado Uberaba Parque Tecnológico. As estatísticas são realizadas usando o currículo Lattes dos professores permanentes da instituição.</Text>
           }
         />
         <ContentPanel

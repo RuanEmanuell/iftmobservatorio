@@ -20,6 +20,19 @@ export default function IndicatorScreen({ route, navigation }) {
     const [teacherCount, setTeacherCount] = useState('');
     const [teacherLattesCount, setTeacherLattesCount] = useState('');
 
+    const campusMap = {
+        "0": "Todos os Campi",
+        "1": "Uberaba Parque Tecnológico",
+        "2": "Uberaba",
+        "3": "Campina Verde",
+        "4": "Ituituba",
+        "5": "Paracatu",
+        "6": "Patos de Minas",
+        "7": "Patrocínio",
+        "8": "Uberlândia",
+        "9": "Uberlândia Centro"
+    }
+
     const bibliographicGraphTypeMap = {
         "eventoArtigoCompleto": "Artigo completo em Evento",
         "eventoArtigoResumo": "Resumo em Evento",
@@ -56,6 +69,22 @@ export default function IndicatorScreen({ route, navigation }) {
         }
     }
 
+    async function getTeacherCount(){
+        setLoading(true);
+        setTeacherCount('');
+        setTeacherLattesCount('');
+        try {
+            const result = await fetch("https://obsiftm.midi.upt.iftm.edu.br/api/Indicadores/QuaisInstituicoes");
+            const data = await result.json();
+            setTeacherCount(data[selectedCampusValue]['quantidadeProfessores']);
+            setTeacherLattesCount(data[selectedCampusValue]['quantidadeProfessoresLattes']);
+        } catch (error) {
+            console.log(error);
+        } finally {
+            setLoading(false);
+        }
+    }
+
     async function fetchData(endpoint: string, fields: string[], setData: (value: any) => void) {
         setLoading(true);
         try {
@@ -63,11 +92,6 @@ export default function IndicatorScreen({ route, navigation }) {
             const data = await result.json();
 
             console.log(`Data from ${endpoint}:`, data);
-
-            if (data && data.length > 0 && data[0]["instituicao"]) {
-                setTeacherCount(data[0]["instituicao"]["quantidadeProfessores"]);
-                setTeacherLattesCount(data[0]["instituicao"]["quantidadeProfessoresLattes"]);
-            }
 
             const formattedData = data.map(item => {
                 let formattedItem = { ano: item.ano };
@@ -126,6 +150,7 @@ export default function IndicatorScreen({ route, navigation }) {
             ["registroSoftware", "registroSoftwareINPI", "patente", "patenteINPI"],
             setInovation
         );
+        getTeacherCount();
         getLastDateLattes();
     }, []);
 
@@ -145,14 +170,15 @@ export default function IndicatorScreen({ route, navigation }) {
             ["registroSoftware", "registroSoftwareINPI", "patente", "patenteINPI"],
             setInovation
         );
+        getTeacherCount();
     }, [selectedCampusValue]);
 
     return (
         <SafeAreaView style={styles.container}>
             <ScrollView contentContainerStyle={styles.scrollView}>
-                <HeaderIFTM navigation={navigation} />
+                <HeaderIFTM showSubHeader = {false} navigation={navigation} />
                 {
-                    !loading && date !== "" && bibliographicProduction && orientation && inovation ?
+                    !loading && date !== "" &&  teacherCount != "" && bibliographicProduction && orientation && inovation ?
                         <View>
                             <Text style={styles.title}>Indicadores por Campus</Text>
                             <View style={{ display: 'flex', flexDirection: 'row' }}>
@@ -181,7 +207,7 @@ export default function IndicatorScreen({ route, navigation }) {
                                         </Picker>
                                     </View>
                                 </View>} />
-                            <Text style={styles.title}>Indicadores - Todos os Campi</Text>
+                            <Text style={styles.title}>Indicadores - {campusMap[selectedCampusValue]}</Text>
                             <Text style={{ fontWeight: 'bold', marginLeft: '5%', marginTop: '5%' }}>Número de docentes: {teacherCount}</Text>
                             <Text style={{ fontWeight: 'bold', marginLeft: '5%' }}>Número de docentes com Lattes: {teacherLattesCount}</Text>
                             <Text style={{ marginLeft: '5%' }}>Observação: Os dados da estatística são relacionados ao docentes permanentes da Instituição. Com isso, alguns dados podem estar vinculados ao docente e não à Instituição.</Text>
