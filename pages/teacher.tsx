@@ -459,7 +459,8 @@ const styles = StyleSheet.create({
     modalInfoRow: {
         flexDirection: 'row',
         justifyContent: 'flex-start',
-        width: '66%',
+        width: '75%',
         marginBottom: 5,
+        alignSelf: 'flex-start'
     },
 });

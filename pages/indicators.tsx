@@ -4,7 +4,6 @@ import ContentPanel from '../components/contentPanel';
 import HeaderIFTM from '../components/header';
 import DSGovLoadingCircle from '../components/loading';
 import { Picker } from '@react-native-picker/picker';
-import { VictoryChart, VictoryTheme, VictoryBar, VictoryAxis, VictoryStack } from 'victory-native';
 import InfoGraph from '../components/graph';
 
 export default function IndicatorScreen({ route, navigation }) {
