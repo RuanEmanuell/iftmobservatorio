@@ -7,10 +7,11 @@ interface inputProps {
     placeholder: string,
     value: string,
     multiline?: boolean,
-    textAlign?: string
+    textAlign?: string,
+    width?: string
 }
 
-export default function DSGovInput({ onChangeText, secureTextEntry, placeholder, value, multiline, textAlign }: inputProps) {
+export default function DSGovInput({ onChangeText, secureTextEntry, placeholder, value, multiline, textAlign, width }: inputProps) {
     return (
         <TextInput
             value={value}
@@ -25,10 +26,10 @@ export default function DSGovInput({ onChangeText, secureTextEntry, placeholder,
                 color: 'black',
                 fontSize: 20,
                 fontWeight: 'bold',
-                width: '75%',
+                width: width ? width: '75%',
                 height: multiline ? 'auto' : 48,
                 minHeight: multiline ? 72 : 48,
-                marginTop: 16,
+                marginVertical: 16,
                 paddingHorizontal: 8,
                 textAlign: textAlign ? textAlign : 'start'
             }}></TextInput>

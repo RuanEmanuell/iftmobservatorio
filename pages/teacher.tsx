@@ -6,19 +6,22 @@ import { Picker } from '@react-native-picker/picker';
 import DSGovLoadingCircle from '../components/loading';
 import DSGovButton from '../components/button';
 import { VictoryLegend, VictoryPie } from "victory-native";
+import DSGovInput from '../components/input';
 
 export default function TeacherScreen({ route, navigation }) {
     const [loading, setLoading] = useState(true);
     const [selectedCampusValue, setSelectedCampusValue] = useState('0');
-    const [date, setDate] = useState("");
+    const [date, setDate] = useState('');
     const [teacherDateGraphData, setTeacherDateGraphData] = useState<any | null>(null);
     const [teacherTitleGraphData, setTeacherTitleGraphData] = useState<any | null>(null);
+    const [originalTeacherList, setOriginalTeacherList] = useState<any | null>(null);
     const [teacherList, setTeacherList] = useState<any | null>(null);
     const [teacherCount, setTeacherCount] = useState('');
     const [teacherLattesCount, setTeacherLattesCount] = useState('');
     const [currentTeacherCount, setCurrentTeacherCount] = useState(20);
     const [modalVisible, setModalVisible] = useState(false);
     const [selectedTeacher, setSelectedTeacher] = useState<any | null>(null);
+    const [searchInputValue, setSearchInputValue] = useState('');
 
     const campusMap = {
         "0": "Todos os Campi",
@@ -68,11 +71,12 @@ export default function TeacherScreen({ route, navigation }) {
             const result = await fetch(`https://obsiftm.midi.upt.iftm.edu.br/api/Pesquisadores/${endpoint}?QualInstituicao=${selectedCampusValue}`);
             const data = await result.json();
 
+            setOriginalTeacherList(data);
             setTeacherList(data);
 
             const filteredData = data.filter((item: any) => item[fields[0]] !== "null" && item[fields[1]] !== "null" && item[fields[2]] !== "null");
 
-            const graduacaoCount = parseInt(teacherCount) - filteredData.filter((item: any) => item[fields[1]] != null || item[fields[2]] != null).length;
+            const graduacaoCount = filteredData.length - filteredData.filter((item: any) => item[fields[1]] != null || item[fields[2]] != null).length;
             const mestradoCount = filteredData.filter((item: any) => item[fields[1]] !== null && item[fields[2]] == null).length;
             const doutoradoCount = filteredData.filter((item: any) => item[fields[2]] !== null).length;
 
@@ -115,6 +119,9 @@ export default function TeacherScreen({ route, navigation }) {
         }
     }
 
+    async function searchTeacher(){
+        setTeacherList(originalTeacherList.filter(item => item['nome'].includes(searchInputValue.toLocaleUpperCase())));
+    }
 
     async function selectTeacher(teacher: any) {
         setSelectedTeacher(teacher);
@@ -204,20 +211,20 @@ export default function TeacherScreen({ route, navigation }) {
                                     }}
                                 />
                                 <VictoryLegend
-                                        x={50}
-                                        title="Títulos dos Docentes"
-                                        centerTitle
-                                        orientation="vertical"
-                                        height={windowHeight * 0.2}
-                                        style={{ title: { fontSize: 15, fontWeight: 'bold' } }}
-                                        data={[
-                                            { name: "Graduação", symbol: { fill: "tomato" } },
-                                            { name: "Mestrado", symbol: { fill: "orange" } },
-                                            { name: "Doutorado", symbol: { fill: "gold" } }
-                                        ]}
-                                    />
+                                    x={50}
+                                    title="Títulos dos Docentes"
+                                    centerTitle
+                                    orientation="vertical"
+                                    height={windowHeight * 0.2}
+                                    style={{ title: { fontSize: 15, fontWeight: 'bold' } }}
+                                    data={[
+                                        { name: "Graduação", symbol: { fill: "tomato" } },
+                                        { name: "Mestrado", symbol: { fill: "orange" } },
+                                        { name: "Doutorado", symbol: { fill: "gold" } }
+                                    ]}
+                                />
                             </View>} />
-                            <ContentPanel label='DATA DA ÚLTIMA ATUALIZAÇÃO DO LATTES' content={
+                        <ContentPanel label='DATA DA ÚLTIMA ATUALIZAÇÃO DO LATTES' content={
                             <View style={{ display: 'flex', flex: 1, alignItems: 'flex-start', justifyContent: 'center' }}>
                                 <VictoryPie
                                     width={windowWidth * 0.9}
@@ -238,32 +245,38 @@ export default function TeacherScreen({ route, navigation }) {
                                     y="y"
                                 />
                                 <VictoryLegend
-                                        x={50}
-                                        title="Última atualização do Lattes dos Docentes"
-                                        centerTitle
-                                        orientation="vertical"
-                                        height={windowHeight * 0.4}
-                                        style={{ title: { fontSize: 15, fontWeight: 'bold' } }}
-                                        data={[
-                                            { name: "Sem Lattes", symbol: { fill: "hotpink" } },
-                                            { name: "2018", symbol: { fill: "blue" } },
-                                            { name: "2019", symbol: { fill: "gold" } },
-                                            { name: "2020", symbol: { fill: "red" } },
-                                            { name: "2021", symbol: { fill: "deeppink" } },
-                                            { name: "2022", symbol: { fill: "purple" } },
-                                            { name: "2023", symbol: { fill: "navy" } },
-                                            { name: "2024", symbol: { fill: "deepskyblue" } },
-                                        ]}
-                                    />
+                                    x={50}
+                                    title="Última atualização do Lattes dos Docentes"
+                                    centerTitle
+                                    orientation="vertical"
+                                    height={windowHeight * 0.4}
+                                    style={{ title: { fontSize: 15, fontWeight: 'bold' } }}
+                                    data={[
+                                        { name: "Sem Lattes", symbol: { fill: "hotpink" } },
+                                        { name: "2018", symbol: { fill: "blue" } },
+                                        { name: "2019", symbol: { fill: "gold" } },
+                                        { name: "2020", symbol: { fill: "red" } },
+                                        { name: "2021", symbol: { fill: "deeppink" } },
+                                        { name: "2022", symbol: { fill: "purple" } },
+                                        { name: "2023", symbol: { fill: "navy" } },
+                                        { name: "2024", symbol: { fill: "deepskyblue" } },
+                                    ]}
+                                />
                             </View>} />
                         <ContentPanel label='DOCENTES' content={
                             <View style={{ flex: 1, backgroundColor: 'white' }}>
+                                <View style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', alignContent: 'center', marginBottom: 15, flexDirection: 'row' }}>
+                                    <DSGovInput placeholder='Pesquisar...' width = '66%' value={searchInputValue} onChangeText={(value) => { setSearchInputValue(value) }} />
+                                    <View style={{ alignSelf: 'center', marginHorizontal: 5 }}>
+                                        <DSGovButton label='Pesquisar' primary onPress={searchTeacher} />
+                                    </View>
+                                </View>
                                 <View style={{ display: 'flex', flexDirection: 'column' }}>
                                     <View style={{ display: 'flex', flexDirection: 'column', width: '100%' }}>
                                         {teacherList.map((item: any, index: number) => (
                                             <Pressable key={index} onPress={() => { selectTeacher(item) }}>
                                                 {index >= currentTeacherCount - 20 && index <= currentTeacherCount && (item['instituicaoID'] == selectedCampusValue || selectedCampusValue == "0") ?
-                                                    <View style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', paddingVertical: 5, marginVertical: 5, elevation: 2, backgroundColor: index % 2 == 0 ? 'lightgray' : 'white' }} >
+                                                    <View style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', paddingVertical: 5, elevation: 2, backgroundColor: index % 2 == 0 ? 'lightgray' : 'white' }} >
                                                         <Image
                                                             source={item['urlFoto'] == 'user.svg' ? require('../assets/user.svg') : { uri: item['urlFoto'] }}
                                                             style={{ width: 30, height: 30, objectFit: 'cover', borderRadius: 100 }}
