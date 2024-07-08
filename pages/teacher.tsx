@@ -395,6 +395,7 @@ const styles = StyleSheet.create({
     searchContainer: {
         flexDirection: 'row',
         margin: 10,
+        justifyContent: 'center'
     },
     searchButton: {
         display: 'flex',
@@ -428,8 +429,8 @@ const styles = StyleSheet.create({
     },
     pagination: {
         flexDirection: 'row',
-        justifyContent: 'space-between',
-        marginTop: 10,
+        justifyContent: 'center',
+        marginTop: 10
     },
     modalOverlay: {
         flex: 1,
@@ -458,7 +459,7 @@ const styles = StyleSheet.create({
     modalInfoRow: {
         flexDirection: 'row',
         justifyContent: 'flex-start',
-        width: '100%',
+        width: '66%',
         marginBottom: 5,
     },
 });
