@@ -69,15 +69,15 @@ export default function IndicatorScreen({ route, navigation }) {
         }
     }
 
-    async function getTeacherCount(){
+    async function getTeacherCount() {
         setLoading(true);
         setTeacherCount('');
         setTeacherLattesCount('');
         try {
-            const result = await fetch("https://obsiftm.midi.upt.iftm.edu.br/api/Indicadores/QuaisInstituicoes");
+            const result = await fetch(`https://obsiftm.midi.upt.iftm.edu.br/api/Pesquisadores/ListaPesquisadores?QualInstituicao=${selectedCampusValue}`);
             const data = await result.json();
-            setTeacherCount(data[selectedCampusValue]['quantidadeProfessores']);
-            setTeacherLattesCount(data[selectedCampusValue]['quantidadeProfessoresLattes']);
+            setTeacherCount(data.length);
+            setTeacherLattesCount(data.filter((item) => item['lattesEndereco'] != "").length);
         } catch (error) {
             console.log(error);
         } finally {
@@ -176,24 +176,23 @@ export default function IndicatorScreen({ route, navigation }) {
     return (
         <SafeAreaView style={styles.container}>
             <ScrollView contentContainerStyle={styles.scrollView}>
-                <HeaderIFTM showSubHeader = {false} navigation={navigation} />
+                <HeaderIFTM showSubHeader={false} navigation={navigation} />
                 {
-                    !loading && date !== "" &&  teacherCount != "" && bibliographicProduction && orientation && inovation ?
+                    !loading && date !== "" && teacherCount !== "" && bibliographicProduction && orientation && inovation ?
                         <View>
                             <Text style={styles.title}>Indicadores por Campus</Text>
-                            <View style={{ display: 'flex', flexDirection: 'row' }}>
-                                <Text style={{ marginLeft: '5%' }}>Dados extraídos da plataforma Lattes em </Text>
-                                <Text style={{ fontWeight: 'bold' }}>{date}</Text>
+                            <View style={styles.dateInfo}>
+                                <Text style={styles.dateLabel}>Dados extraídos da plataforma Lattes em </Text>
+                                <Text style={styles.dateValue}>{date}</Text>
                             </View>
                             <ContentPanel label='PESQUISAR' content={
-                                <View style={{ width: '100%' }}>
-                                    <Text style={{ marginLeft: '5%' }}>Escolha o campus: </Text>
-                                    <View style={{ flex: 1, borderWidth: 2, borderColor: 'lightgray', marginLeft: '5%', width: '90%', marginTop: 5 }}>
+                                <View style={styles.pickerContainer}>
+                                    <Text style={styles.pickerLabel}>Escolha o campus: </Text>
+                                    <View style={styles.pickerWrapper}>
                                         <Picker
                                             selectedValue={selectedCampusValue}
-                                            onValueChange={(itemValue) =>
-                                                setSelectedCampusValue(itemValue)
-                                            }>
+                                            onValueChange={(itemValue) => setSelectedCampusValue(itemValue)}
+                                        >
                                             <Picker.Item label="Todos os Campi" value="0" />
                                             <Picker.Item label="Campina Verde" value="3" />
                                             <Picker.Item label="Ituitaba" value="4" />
@@ -206,11 +205,12 @@ export default function IndicatorScreen({ route, navigation }) {
                                             <Picker.Item label="Uberlândia Centro" value="9" />
                                         </Picker>
                                     </View>
-                                </View>} />
+                                </View>
+                            } />
                             <Text style={styles.title}>Indicadores - {campusMap[selectedCampusValue]}</Text>
-                            <Text style={{ fontWeight: 'bold', marginLeft: '5%', marginTop: '5%' }}>Número de docentes: {teacherCount}</Text>
-                            <Text style={{ fontWeight: 'bold', marginLeft: '5%' }}>Número de docentes com Lattes: {teacherLattesCount}</Text>
-                            <Text style={{ marginLeft: '5%' }}>Observação: Os dados da estatística são relacionados ao docentes permanentes da Instituição. Com isso, alguns dados podem estar vinculados ao docente e não à Instituição.</Text>
+                            <Text style={styles.teacherInfo}>Número de docentes: {teacherCount}</Text>
+                            <Text style={styles.teacherInfo}>Número de docentes com Lattes: {teacherLattesCount}</Text>
+                            <Text style={styles.observation}>Observação: Os dados da estatística são relacionados ao docentes permanentes da Instituição. Com isso, alguns dados podem estar vinculados ao docente e não à Instituição.</Text>
                             <InfoGraph
                                 label='PRODUÇÃO BIBLIOGRÁFICA'
                                 graphTitle={`Quantidade x Anos - ${bibliographicGraphTypeMap[selectedBibliographicTypeValue]}`}
@@ -258,6 +258,7 @@ export default function IndicatorScreen({ route, navigation }) {
             </ScrollView>
         </SafeAreaView>
     );
+    
 }
 
 const styles = StyleSheet.create({
@@ -273,5 +274,38 @@ const styles = StyleSheet.create({
         fontSize: 24,
         textAlign: 'center',
         marginTop: '5%',
+    },
+    dateInfo: {
+        display: 'flex',
+        flexDirection: 'row',
+        marginLeft: '5%',
+    },
+    dateLabel: {
+        marginLeft: '5%',
+    },
+    dateValue: {
+        fontWeight: 'bold',
+    },
+    pickerContainer: {
+        width: '100%',
+    },
+    pickerLabel: {
+        marginLeft: '5%',
+    },
+    pickerWrapper: {
+        flex: 1,
+        borderWidth: 2,
+        borderColor: 'lightgray',
+        marginLeft: '5%',
+        width: '90%',
+        marginTop: 5,
+    },
+    teacherInfo: {
+        fontWeight: 'bold',
+        marginLeft: '5%',
+        marginTop: '5%',
+    },
+    observation: {
+        marginLeft: '5%',
     }
 });

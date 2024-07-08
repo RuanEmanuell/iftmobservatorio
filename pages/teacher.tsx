@@ -159,18 +159,18 @@ export default function TeacherScreen({ route, navigation }) {
                 <HeaderIFTM showSubHeader={false} navigation={navigation} />
                 {!loading && date && teacherCount != "" && teacherTitleGraphData ?
                     <View>
-                        <Text style={styles.title}>Consulta de decentes</Text>
-                        <View style={{ display: 'flex', flexDirection: 'row' }}>
-                            <Text style={{ marginLeft: '5%' }}>Dados extraídos da plataforma Lattes em </Text>
-                            <Text style={{ fontWeight: 'bold' }}>{date}</Text>
+                        <Text style={styles.title}>Consulta de docentes</Text>
+                        <View style={styles.dateInfoContainer}>
+                            <Text style={styles.dateInfoText}>Dados extraídos da plataforma Lattes em </Text>
+                            <Text style={styles.boldText}>{date}</Text>
                         </View>
                         <Text style={styles.title}>{campusMap[selectedCampusValue]}</Text>
-                        <Text style={{ fontWeight: 'bold', marginLeft: '5%', marginTop: '5%' }}>Número de docentes: {teacherCount}</Text>
-                        <Text style={{ fontWeight: 'bold', marginLeft: '5%' }}>Número de docentes com Lattes: {teacherLattesCount}</Text>
+                        <Text style={[styles.boldText, { marginLeft: '5%', marginTop: '5%' }]}>Número de docentes: {teacherCount}</Text>
+                        <Text style={[styles.boldText, { marginLeft: '5%' }]}>Número de docentes com Lattes: {teacherLattesCount}</Text>
                         <ContentPanel label='PESQUISAR' content={
                             <View style={{ width: '100%' }}>
                                 <Text style={{ marginLeft: '5%' }}>Escolha o campus: </Text>
-                                <View style={{ flex: 1, borderWidth: 2, borderColor: 'lightgray', marginLeft: '5%', width: '90%', marginTop: 5 }}>
+                                <View style={[styles.pickerWrapper, { marginLeft: '5%', width: '90%', marginTop: 5 }]}>
                                     <Picker
                                         selectedValue={selectedCampusValue}
                                         onValueChange={(itemValue) =>
@@ -188,9 +188,10 @@ export default function TeacherScreen({ route, navigation }) {
                                         <Picker.Item label="Uberlândia Centro" value="9" />
                                     </Picker>
                                 </View>
-                            </View>} />
+                            </View>
+                        } />
                         <ContentPanel label='TITULARIDADE' content={
-                            <View style={{ display: 'flex', flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+                            <View style={styles.graphContainer}>
                                 <VictoryPie
                                     width={windowWidth * 0.9}
                                     height={windowHeight * 0.4}
@@ -223,9 +224,10 @@ export default function TeacherScreen({ route, navigation }) {
                                         { name: "Doutorado", symbol: { fill: "gold" } }
                                     ]}
                                 />
-                            </View>} />
+                            </View>
+                        } />
                         <ContentPanel label='DATA DA ÚLTIMA ATUALIZAÇÃO DO LATTES' content={
-                            <View style={{ display: 'flex', flex: 1, alignItems: 'flex-start', justifyContent: 'center' }}>
+                            <View style={styles.graphContainer}>
                                 <VictoryPie
                                     width={windowWidth * 0.9}
                                     height={windowHeight * 0.6}
@@ -262,34 +264,33 @@ export default function TeacherScreen({ route, navigation }) {
                                         { name: "2024", symbol: { fill: "deepskyblue" } },
                                     ]}
                                 />
-                            </View>} />
+                            </View>
+                        } />
                         <ContentPanel label='DOCENTES' content={
-                            <View style={{ flex: 1, backgroundColor: 'white' }}>
-                                <View style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', alignContent: 'center', marginBottom: 15, flexDirection: 'row' }}>
-                                    <DSGovInput placeholder='Pesquisar...' width = '66%' value={searchInputValue} onChangeText={(value) => { setSearchInputValue(value) }} />
-                                    <View style={{ alignSelf: 'center', marginHorizontal: 5 }}>
+                            <View style={styles.teacherListContainer}>
+                                <View style={styles.searchContainer}>
+                                    <DSGovInput placeholder='Pesquisar...' width='66%' value={searchInputValue} onChangeText={(value) => { setSearchInputValue(value) }} />
+                                    <View style={styles.searchButton}>
                                         <DSGovButton label='Pesquisar' primary onPress={searchTeacher} />
                                     </View>
                                 </View>
-                                <View style={{ display: 'flex', flexDirection: 'column' }}>
-                                    <View style={{ display: 'flex', flexDirection: 'column', width: '100%' }}>
-                                        {teacherList.map((item: any, index: number) => (
-                                            <Pressable key={index} onPress={() => { selectTeacher(item) }}>
-                                                {index >= currentTeacherCount - 20 && index <= currentTeacherCount && (item['instituicaoID'] == selectedCampusValue || selectedCampusValue == "0") ?
-                                                    <View style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', paddingVertical: 5, elevation: 2, backgroundColor: index % 2 == 0 ? 'lightgray' : 'white' }} >
-                                                        <Image
-                                                            source={item['urlFoto'] == 'user.svg' ? require('../assets/user.svg') : { uri: item['urlFoto'] }}
-                                                            style={{ width: 30, height: 30, objectFit: 'cover', borderRadius: 100 }}
-                                                        />
-                                                        <Text style={{ marginLeft: 5 }}>{item['nome']}</Text>
-                                                    </View> : <></>}
-                                            </Pressable>
-                                        ))}
-                                    </View>
-                                    <View style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'center' }}>
-                                        {currentTeacherCount > 20 ? <DSGovButton label='Página anterior' onPress={() => setCurrentTeacherCount(prev => prev - 20)} /> : <></>}
-                                        {currentTeacherCount <= parseInt(teacherCount) ? <DSGovButton label='Próxima página' onPress={() => setCurrentTeacherCount(prev => prev + 20)} /> : <></>}
-                                    </View>
+                                <View style={styles.teacherList}>
+                                    {teacherList.map((item: any, index: number) => (
+                                        <Pressable key={index} onPress={() => { selectTeacher(item) }}>
+                                            {index >= currentTeacherCount - 20 && index <= currentTeacherCount && (item['instituicaoID'] == selectedCampusValue || selectedCampusValue == "0") ?
+                                                <View style={[styles.teacherItem, { backgroundColor: index % 2 == 0 ? 'lightgray' : 'white' }]}>
+                                                    <Image
+                                                        source={item['urlFoto'] == 'user.svg' ? require('../assets/user.svg') : { uri: item['urlFoto'] }}
+                                                        style={styles.teacherImage}
+                                                    />
+                                                    <Text style={styles.teacherName}>{item['nome']}</Text>
+                                                </View> : <></>}
+                                        </Pressable>
+                                    ))}
+                                </View>
+                                <View style={styles.pagination}>
+                                    {currentTeacherCount > 20 ? <DSGovButton label='Página anterior' onPress={() => setCurrentTeacherCount(prev => prev - 20)} /> : <></>}
+                                    {currentTeacherCount <= parseInt(teacherCount) ? <DSGovButton label='Próxima página' onPress={() => setCurrentTeacherCount(prev => prev + 20)} /> : <></>}
                                 </View>
                             </View>
                         } />
@@ -299,42 +300,43 @@ export default function TeacherScreen({ route, navigation }) {
                                 transparent={true}
                                 visible={modalVisible}
                             >
-                                <TouchableOpacity onPress={() => setModalVisible(false)} style={{ backgroundColor: 'rgba(0, 0, 0, 0.75)', flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                    <View style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'center', backgroundColor: 'white', minHeight: 200, height: 'auto', width: '90%' }}>
+                                <TouchableOpacity onPress={() => setModalVisible(false)} style={styles.modalOverlay}>
+                                    <View style={styles.modalContent}>
                                         <Image
                                             source={selectedTeacher['urlFoto'] == 'user.svg' ? require('../assets/user.svg') : { uri: selectedTeacher['urlFoto'] }}
-                                            style={{ width: 150, height: 150, objectFit: 'cover', borderRadius: 100, alignSelf: 'center', marginVertical: 20 }}
+                                            style={styles.modalImage}
                                         />
-                                        <Text style={{ ...styles.title, textAlign: 'center', alignSelf: 'center', marginBottom: 20 }}>{selectedTeacher['nome']}</Text>
-                                        <View style={{ display: 'flex', flexDirection: 'row', marginHorizontal: 10, marginBottom: 5, width: '66%' }}>
-                                            <Text style={{ fontWeight: 'bold' }}>EMAIL: </Text>
+                                        <Text style={styles.modalTitle}>{selectedTeacher['nome']}</Text>
+                                        <View style={styles.modalInfoRow}>
+                                            <Text style={styles.boldText}>EMAIL: </Text>
                                             <Text>{selectedTeacher['email'] ? selectedTeacher['email'] : 'Não consta'} </Text>
                                         </View>
-                                        <View style={{ display: 'flex', flexDirection: 'row', marginHorizontal: 10, marginBottom: 5, width: '66%' }}>
-                                            <Text style={{ fontWeight: 'bold' }}>GRADUAÇÃO: </Text>
+                                        <View style={styles.modalInfoRow}>
+                                            <Text style={styles.boldText}>GRADUAÇÃO: </Text>
                                             <Text>{selectedTeacher['graduacao'] ? selectedTeacher['graduacao'] : 'Não consta'}</Text>
                                         </View>
-                                        <View style={{ display: 'flex', flexDirection: 'row', marginHorizontal: 10, marginBottom: 5, width: '66%' }}>
-                                            <Text style={{ fontWeight: 'bold' }}>MESTRADO: </Text>
+                                        <View style={styles.modalInfoRow}>
+                                            <Text style={styles.boldText}>MESTRADO: </Text>
                                             <Text>{selectedTeacher['mestrado'] ? selectedTeacher['mestrado'] : 'Não consta'}</Text>
                                         </View>
-                                        <View style={{ display: 'flex', flexDirection: 'row', marginHorizontal: 10, marginBottom: 5, width: '66%' }}>
-                                            <Text style={{ fontWeight: 'bold' }}>DOUTORADO: </Text>
+                                        <View style={styles.modalInfoRow}>
+                                            <Text style={styles.boldText}>DOUTORADO: </Text>
                                             <Text>{selectedTeacher['doutorado'] ? selectedTeacher['doutorado'] : 'Não consta'} </Text>
                                         </View>
-                                        <View style={{ display: 'flex', flexDirection: 'row', marginHorizontal: 10, marginBottom: 20, width: '66%' }}>
-                                            <Text style={{ fontWeight: 'bold' }}>DATA LATTES: </Text>
+                                        <View style={styles.modalInfoRow}>
+                                            <Text style={styles.boldText}>DATA LATTES: </Text>
                                             <Text>{selectedTeacher['dataAtualizacaoLattes'] ? selectedTeacher['dataAtualizacaoLattes'] : 'Não consta'} </Text>
                                         </View>
                                     </View>
                                 </TouchableOpacity>
                             </Modal> : <></>}
-
+    
                     </View>
                     : <DSGovLoadingCircle />}
             </ScrollView>
         </SafeAreaView>
     );
+    
 }
 
 const styles = StyleSheet.create({
@@ -350,5 +352,113 @@ const styles = StyleSheet.create({
         fontSize: 24,
         textAlign: 'center',
         marginTop: '5%',
-    }
+    },
+    dateInfoContainer: {
+        display: 'flex',
+        flexDirection: 'row',
+        marginLeft: '5%',
+    },
+    dateInfoText: {
+        marginLeft: '5%',
+    },
+    boldText: {
+        fontWeight: 'bold',
+    },
+    boldTextWithMargin: {
+        fontWeight: 'bold',
+        marginTop: '2%',
+        marginLeft: '5%',
+    },
+    pickerContainer: {
+        display: 'flex',
+        flexDirection: 'column',
+    },
+    pickerLabel: {
+        fontSize: 16,
+        fontWeight: 'bold',
+        marginTop: '2%',
+    },
+    pickerWrapper: {
+        borderWidth: 1,
+        borderColor: 'gray',
+        borderRadius: 5,
+        marginTop: '1%',
+    },
+    graphContainer: {
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    teacherListContainer: {
+        display: 'flex',
+        flexDirection: 'column',
+    },
+    searchContainer: {
+        flexDirection: 'row',
+        margin: 10,
+    },
+    searchButton: {
+        display: 'flex',
+        marginHorizontal: 10,
+        justifyContent: 'flex-start'
+    },
+    teacherList: {
+        display: 'flex',
+        flexDirection: 'column'
+    },
+    teacherListItems: {
+        flexDirection: 'column',
+        width: '80%'
+    },
+    teacherItem: {
+        display: 'flex',
+        flexDirection: 'row',
+        alignItems: 'center',
+        padding: 10,
+        borderBottomWidth: 1,
+        borderBottomColor: 'gray',
+    },
+    teacherImage: {
+        width: 50,
+        height: 50,
+        marginRight: 10,
+        borderRadius: 25,
+    },
+    teacherName: {
+        fontSize: 14,
+    },
+    pagination: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        marginTop: 10,
+    },
+    modalOverlay: {
+        flex: 1,
+        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    modalContent: {
+        width: '90%',
+        backgroundColor: 'white',
+        padding: 20,
+        borderRadius: 10,
+        alignItems: 'center',
+    },
+    modalImage: {
+        width: 100,
+        height: 100,
+        borderRadius: 50,
+        marginBottom: 20,
+    },
+    modalTitle: {
+        fontSize: 24,
+        fontWeight: 'bold',
+        marginBottom: 10,
+    },
+    modalInfoRow: {
+        flexDirection: 'row',
+        justifyContent: 'flex-start',
+        width: '100%',
+        marginBottom: 5,
+    },
 });

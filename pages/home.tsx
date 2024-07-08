@@ -13,21 +13,21 @@ export default function HomeScreen({ route, navigation }) {
           image={require('../assets/obs.png')}
           label='OBSERVATÓRIO'
           content={
-            <Text style={{ textAlign: 'justify', marginHorizontal: 7.5 }}>O Observatório tem como principal objetivo o mapeamento das áreas de pesquisa, perfis de professores e elaboração de indicadores de pesquisa. O Observatório faz parte do Grupo de Pesquisa em Mineração da Dados e Imagens (MiDI) do IFTM Campus Avançado Uberaba Parque Tecnológico. As estatísticas são realizadas usando o currículo Lattes dos professores permanentes da instituição.</Text>
+            <Text style={styles.homeParagraph}>O Observatório tem como principal objetivo o mapeamento das áreas de pesquisa, perfis de professores e elaboração de indicadores de pesquisa. O Observatório faz parte do Grupo de Pesquisa em Mineração da Dados e Imagens (MiDI) do IFTM Campus Avançado Uberaba Parque Tecnológico. As estatísticas são realizadas usando o currículo Lattes dos professores permanentes da instituição.</Text>
           }
         />
         <ContentPanel
           image={require('../assets/iftm.png')}
           label='IFTM'
           content={
-            <Text style={{ textAlign: 'justify', marginHorizontal: 7.5 }}>O Instituto Federal de Educação, Ciência e Tecnologia do Triângulo Mineiro (IFTM) é composto, atualmente, pelos Campus Campina Verde, Ibiá, Ituiutaba, Paracatu, Patos de Minas, Patrocínio, Uberaba, Uberaba Parque Tecnológico, Uberlândia e Uberlândia Centro e pela Reitoria. A missão do IFTM é ofertar a Educação Profissional
+            <Text style={styles.homeParagraph}>O Instituto Federal de Educação, Ciência e Tecnologia do Triângulo Mineiro (IFTM) é composto, atualmente, pelos Campus Campina Verde, Ibiá, Ituiutaba, Paracatu, Patos de Minas, Patrocínio, Uberaba, Uberaba Parque Tecnológico, Uberlândia e Uberlândia Centro e pela Reitoria. A missão do IFTM é ofertar a Educação Profissional
               e Tecnológica por meio do Ensino, Pesquisa e Extensão.</Text>
           }
         />
         <ContentPanel
           label='ENTRE EM CONTATO'
           content={
-            <Text style={{ textAlign: 'justify', marginHorizontal: 7.5 }}>Você pode entrar em contato com a equipe de desenvolvimento do Observatório
+            <Text style={styles.homeParagraph}>Você pode entrar em contato com a equipe de desenvolvimento do Observatório
               IFTM para relatar problemas, deixar sugestões ou comentários. Basta enviar um email para o líder do projeto.</Text>
           }
         />
@@ -49,5 +49,9 @@ const styles = StyleSheet.create({
     fontSize: 24,
     textAlign: 'center',
     marginTop: '5%',
+  },
+  homeParagraph: {
+    textAlign: 'justify',
+     marginHorizontal: 7.5
   }
 });
